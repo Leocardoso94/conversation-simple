@@ -2,12 +2,12 @@
 // to hold functions that are used in multiple other modules
 /* eslint no-unused-vars: "off" */
 
-var Common = (function() {
+const Common = (function () {
   // Publicly accessible methods defined
   return {
     buildDomElement: buildDomElementFromJson,
-    fireEvent: fireEvent,
-    listForEach: listForEach
+    fireEvent,
+    listForEach,
   };
 
   // Take in JSON object and build a DOM element out of it
@@ -25,7 +25,7 @@ var Common = (function() {
   //  }
   function buildDomElementFromJson(domJson) {
     // Create a DOM element with the given tag name
-    var element = document.createElement(domJson.tagName);
+    const element = document.createElement(domJson.tagName);
 
     // Fill the "content" of the element
     if (domJson.text) {
@@ -36,21 +36,21 @@ var Common = (function() {
 
     // Add classes to the element
     if (domJson.classNames) {
-      for (var i = 0; i < domJson.classNames.length; i++) {
+      for (let i = 0; i < domJson.classNames.length; i++) {
         element.classList.add(domJson.classNames[i]);
       }
     }
     // Add attributes to the element
     if (domJson.attributes) {
-      for (var j = 0; j < domJson.attributes.length; j++) {
-        var currentAttribute = domJson.attributes[j];
+      for (let j = 0; j < domJson.attributes.length; j++) {
+        const currentAttribute = domJson.attributes[j];
         element.setAttribute(currentAttribute.name, currentAttribute.value);
       }
     }
     // Add children elements to the element
     if (domJson.children) {
-      for (var k = 0; k < domJson.children.length; k++) {
-        var currentChild = domJson.children[k];
+      for (let k = 0; k < domJson.children.length; k++) {
+        const currentChild = domJson.children[k];
         element.appendChild(buildDomElementFromJson(currentChild));
       }
     }
@@ -59,11 +59,11 @@ var Common = (function() {
 
   // Trigger an event to fire
   function fireEvent(element, event) {
-    var evt;
+    let evt;
     if (document.createEventObject) {
       // dispatch for IE
       evt = document.createEventObject();
-      return element.fireEvent('on' + event, evt);
+      return element.fireEvent(`on${event}`, evt);
     }
     // otherwise, dispatch for Firefox, Chrome + others
     evt = document.createEvent('HTMLEvents');
@@ -73,7 +73,7 @@ var Common = (function() {
 
   // A function that runs a for each loop on a List, running the callback function for each one
   function listForEach(list, callback) {
-    for (var i = 0; i < list.length; i++) {
+    for (let i = 0; i < list.length; i++) {
       callback.call(null, list[i]);
     }
   }

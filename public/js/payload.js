@@ -1,26 +1,26 @@
 // The PayloadPanel module is designed to handle
 // all display and behaviors of the conversation column of the app.
 /* eslint no-unused-vars: "off" */
-/* global Api: true, Common: true, PayloadPanel: true*/
+/* global Api: true, Common: true, PayloadPanel: true */
 
-var PayloadPanel = (function() {
-  var settings = {
+const PayloadPanel = (function () {
+  const settings = {
     selectors: {
       payloadColumn: '#payload-column',
       payloadInitial: '#payload-initial-message',
       payloadRequest: '#payload-request',
-      payloadResponse: '#payload-response'
+      payloadResponse: '#payload-response',
     },
     payloadTypes: {
       request: 'request',
-      response: 'response'
-    }
+      response: 'response',
+    },
   };
 
   // Publicly accessible methods defined
   return {
-    init: init,
-    togglePanel: togglePanel
+    init,
+    togglePanel,
   };
 
   // Initialize the module
@@ -33,7 +33,7 @@ var PayloadPanel = (function() {
   // hidden (default for small/mobile resolution apps)
   // full width (regardless of screen size)
   function togglePanel(event, element) {
-    var payloadColumn = document.querySelector(settings.selectors.payloadColumn);
+    const payloadColumn = document.querySelector(settings.selectors.payloadColumn);
     if (element.classList.contains('full')) {
       element.classList.remove('full');
       payloadColumn.classList.remove('full');
@@ -46,14 +46,14 @@ var PayloadPanel = (function() {
   // Set up callbacks on payload setters in Api module
   // This causes the displayPayload function to be called when messages are sent / received
   function payloadUpdateSetup() {
-    var currentRequestPayloadSetter = Api.setRequestPayload;
-    Api.setRequestPayload = function(newPayloadStr) {
+    const currentRequestPayloadSetter = Api.setRequestPayload;
+    Api.setRequestPayload = function (newPayloadStr) {
       currentRequestPayloadSetter.call(Api, newPayloadStr);
       displayPayload(settings.payloadTypes.request);
     };
 
-    var currentResponsePayloadSetter = Api.setResponsePayload;
-    Api.setResponsePayload = function(newPayload) {
+    const currentResponsePayloadSetter = Api.setResponsePayload;
+    Api.setResponsePayload = function (newPayload) {
       currentResponsePayloadSetter.call(Api, newPayload);
       displayPayload(settings.payloadTypes.response);
     };
@@ -61,12 +61,12 @@ var PayloadPanel = (function() {
 
   // Display a request or response payload that has just been sent/received
   function displayPayload(typeValue) {
-    var isRequest = checkRequestType(typeValue);
+    const isRequest = checkRequestType(typeValue);
     if (isRequest !== null) {
       // Create new payload DOM element
-      var payloadDiv = buildPayloadDomElement(isRequest);
-      var payloadElement = document.querySelector(isRequest
-              ? settings.selectors.payloadRequest : settings.selectors.payloadResponse);
+      const payloadDiv = buildPayloadDomElement(isRequest);
+      const payloadElement = document.querySelector(isRequest
+        ? settings.selectors.payloadRequest : settings.selectors.payloadResponse);
       // Clear out payload holder element
       while (payloadElement.lastChild) {
         payloadElement.removeChild(payloadElement.lastChild);
@@ -75,7 +75,7 @@ var PayloadPanel = (function() {
       payloadElement.appendChild(payloadDiv);
       // Set the horizontal rule to show (if request and response payloads both exist)
       // or to hide (otherwise)
-      var payloadInitial = document.querySelector(settings.selectors.payloadInitial);
+      const payloadInitial = document.querySelector(settings.selectors.payloadInitial);
       if (Api.getRequestPayload() || Api.getResponsePayload()) {
         payloadInitial.classList.add('hide');
       }
@@ -96,32 +96,32 @@ var PayloadPanel = (function() {
 
   // Constructs new DOM element to use in displaying the payload
   function buildPayloadDomElement(isRequest) {
-    var payloadPrettyString = jsonPrettyPrint(isRequest
-            ? Api.getRequestPayload() : Api.getResponsePayload());
+    const payloadPrettyString = jsonPrettyPrint(isRequest
+      ? Api.getRequestPayload() : Api.getResponsePayload());
 
-    var payloadJson = {
-      'tagName': 'div',
-      'children': [{
+    const payloadJson = {
+      tagName: 'div',
+      children: [{
         // <div class='header-text'>
-        'tagName': 'div',
-        'text': isRequest ? 'Entrada do usuário' : 'Watson entende',
-        'classNames': ['header-text']
+        tagName: 'div',
+        text: isRequest ? 'Entrada do usuário' : 'Watson entende',
+        classNames: ['header-text'],
       }, {
         // <div class='code-line responsive-columns-wrapper'>
-        'tagName': 'div',
-        'classNames': ['code-line', 'responsive-columns-wrapper'],
-        'children': [{
+        tagName: 'div',
+        classNames: ['code-line', 'responsive-columns-wrapper'],
+        children: [{
           // <div class='line-numbers'>
-          'tagName': 'pre',
-          'text': createLineNumberString((payloadPrettyString.match(/\n/g) || []).length + 1),
-          'classNames': ['line-numbers']
+          tagName: 'pre',
+          text: createLineNumberString((payloadPrettyString.match(/\n/g) || []).length + 1),
+          classNames: ['line-numbers'],
         }, {
           // <div class='payload-text responsive-column'>
-          'tagName': 'pre',
-          'classNames': ['payload-text', 'responsive-column'],
-          'html': payloadPrettyString
-        }]
-      }]
+          tagName: 'pre',
+          classNames: ['payload-text', 'responsive-column'],
+          html: payloadPrettyString,
+        }],
+      }],
     };
 
     return Common.buildDomElement(payloadJson);
@@ -132,15 +132,14 @@ var PayloadPanel = (function() {
     if (json === null) {
       return '';
     }
-    var convert = JSON.stringify(json, null, 2);
+    let convert = JSON.stringify(json, null, 2);
 
-    convert = convert.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
-      />/g, '&gt;');
+    convert = convert.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     convert = convert
       .replace(
         /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-        function(match) {
-          var cls = 'number';
+        (match) => {
+          let cls = 'number';
           if (/^"/.test(match)) {
             if (/:$/.test(match)) {
               cls = 'key';
@@ -152,17 +151,18 @@ var PayloadPanel = (function() {
           } else if (/null/.test(match)) {
             cls = 'null';
           }
-          return '<span class="' + cls + '">' + match + '</span>';
-        });
+          return `<span class="${cls}">${match}</span>`;
+        },
+      );
     return convert;
   }
 
   // Used to generate a string of consecutive numbers separated by new lines
   // - used as line numbers for displayed JSON
   function createLineNumberString(numberOfLines) {
-    var lineString = '';
-    var prefix = '';
-    for (var i = 1; i <= numberOfLines; i++) {
+    let lineString = '';
+    let prefix = '';
+    for (let i = 1; i <= numberOfLines; i++) {
       lineString += prefix;
       lineString += i;
       prefix = '\n';
