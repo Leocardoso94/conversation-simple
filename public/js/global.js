@@ -6,10 +6,11 @@
 (function () {
   // Initialize all modules
   ConversationPanel.init();
+  PayloadPanel.init();
+
   const input = document.getElementById('textInput');
-  console.log(input)
   input.addEventListener('keydown', function (event) {
     ConversationPanel.inputKeyDown(event, this);
   });
-  PayloadPanel.init();
+
 }());
