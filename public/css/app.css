@@ -406,3 +406,11 @@ html {
     visibility: hidden;
     display: none;
 }
+
+@media only screen and (max-width: 600px) {
+    #audio {
+        visibility: initial;
+        display: block;
+        width: 80%;
+    }
+}
