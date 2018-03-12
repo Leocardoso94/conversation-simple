@@ -412,5 +412,7 @@ html {
         visibility: initial;
         display: block;
         width: 80%;
+        position: absolute;
+        top: 0;
     }
 }
