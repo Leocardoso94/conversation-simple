@@ -1,14 +1,44 @@
 
 
-const express = require('express'); // app server
-const bodyParser = require('body-parser'); // parser for post requests
+const express = require('express');
+const bodyParser = require('body-parser');
 const Conversation = require('watson-developer-cloud/conversation/v1'); // watson sdk
+const TextToSpeechV1 = require('watson-developer-cloud/text-to-speech/v1');
 
 const app = express();
 
 // Bootstrap application settings
 app.use(express.static('./public')); // load UI from public folder
 app.use(bodyParser.json());
+
+const getFileExtension = (acceptQuery) => {
+  const accept = acceptQuery || '';
+  switch (accept) {
+    case 'audio/ogg;codecs=opus':
+    case 'audio/ogg;codecs=vorbis':
+      return 'ogg';
+    case 'audio/wav':
+      return 'wav';
+    case 'audio/mpeg':
+      return 'mpeg';
+    case 'audio/webm':
+      return 'webm';
+    case 'audio/flac':
+      return 'flac';
+    default:
+      return 'mp3';
+  }
+};
+
+
+const textToSpeech = new TextToSpeechV1({
+  // If unspecified here, the TEXT_TO_SPEECH_USERNAME and
+  // TEXT_TO_SPEECH_PASSWORD env properties will be checked
+  // After that, the SDK will fall back to the bluemix-provided VCAP_SERVICES environment property
+  // username: '<username>',
+  // password: '<password>',
+});
+
 
 // Create the service wrapper
 const conversation = new Conversation({
@@ -19,12 +49,6 @@ const conversation = new Conversation({
   version_date: '2017-05-26',
 });
 
-/**
- * Updates the response text using the intent confidence
- * @param  {Object} input The request to the Conversation service
- * @param  {Object} response The response from the Conversation service
- * @return {Object}          The response with the updated message
- */
 function updateMessage(input, response) {
   let responseText = null;
   if (!response.output) {
@@ -74,6 +98,25 @@ app.post('/api/message', (req, res) => {
     }
     return res.json(updateMessage(payload, data));
   });
+});
+
+/**
+ * Pipe the synthesize method
+ */
+app.get('/api/synthesize', (req, res, next) => {
+  req.query.voice = 'pt-BR_IsabelaVoice';
+  req.query.download = 'true';
+  req.query.accept = 'audio/mp3';
+
+
+  const transcript = textToSpeech.synthesize(req.query);
+  transcript.on('response', (response) => {
+    if (req.query.download) {
+      response.headers['content-disposition'] = `attachment; filename=transcript.${getFileExtension(req.query.accept)}`;
+    }
+  });
+  transcript.on('error', next);
+  transcript.pipe(res);
 });
 
 

@@ -2,6 +2,18 @@
 // all display and behaviors of the conversation column of the app.
 /* eslint no-unused-vars: "off" */
 /* global Api: true, Common: true */
+var textList = [];
+
+const canPlayAudioFormat = (mimeType) => {
+  const audio = document.createElement('audio');
+  if (audio) {
+    return (typeof audio.canPlayType === 'function' && audio.canPlayType(mimeType) !== '');
+  }
+  return false;
+};
+
+
+canPlayAudioFormat('audio/mp3');
 
 const ConversationPanel = (function () {
   const settings = {
@@ -84,8 +96,8 @@ const ConversationPanel = (function () {
         const txtNode = document.createTextNode(input.value);
         ['font-size', 'font-style', 'font-weight', 'font-family', 'line-height',
           'text-transform', 'letter-spacing'].forEach((index) => {
-          dummy.style[index] = window.getComputedStyle(input, null).getPropertyValue(index);
-        });
+            dummy.style[index] = window.getComputedStyle(input, null).getPropertyValue(index);
+          });
         dummy.textContent = txtNode.textContent;
 
         let padding = 0;
@@ -117,13 +129,16 @@ const ConversationPanel = (function () {
     const isUser = isUserMessage(typeValue);
     const textExists = (newPayload.input && newPayload.input.text)
       || (newPayload.output && newPayload.output.text);
+
+    if (newPayload.output) playAudio(newPayload.output.text);
     if (isUser !== null && textExists) {
-      // Create new message DOM element
+      // Create new message DOM
+
       const messageDivs = buildMessageDomElements(newPayload, isUser);
       const chatBoxElement = document.querySelector(settings.selectors.chatBox);
       const previousLatest = chatBoxElement.querySelectorAll((isUser
         ? settings.selectors.fromUser : settings.selectors.fromWatson)
-              + settings.selectors.latest);
+        + settings.selectors.latest);
       // Previous "latest" message is no longer the most recent
       if (previousLatest) {
         Common.listForEach(previousLatest, (element) => {
@@ -190,6 +205,26 @@ const ConversationPanel = (function () {
     return messageArray;
   }
 
+  async function playAudio(text) {
+    if (!text) return;
+
+    const audio = document.getElementById('audio');
+    audio.setAttribute('src', '');
+
+    fetch(`/api/synthesize?text=${text}`).then((response) => {
+      response.blob().then((blob) => {
+        const url = window.URL.createObjectURL(blob);
+
+
+        audio.setAttribute('src', url);
+        audio.setAttribute('type', 'audio/ogg;codecs=opus');
+
+
+      });
+
+    });
+  }
+
   // Scroll to the bottom of the chat window (to the most recent messages)
   // Note: this method will bring the most recent user message into view,
   //   even if the most recent message is from Watson.
@@ -200,7 +235,7 @@ const ConversationPanel = (function () {
 
     // Scroll to the latest message sent by the user
     const scrollEl = scrollingChat.querySelector(settings.selectors.fromUser
-            + settings.selectors.latest);
+      + settings.selectors.latest);
     if (scrollEl) {
       scrollingChat.scrollTop = scrollEl.offsetTop;
     }
